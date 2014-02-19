@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+pack_dir=ARGV[0]
+home=ENV['HOME']
+
+puts "default_process_types:"
+puts "  web: nginx/start"

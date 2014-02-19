@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+build_dir = ARGV[0]
+
+Dir.foreach(build_dir) do |fname|
+  if fname.downcase == "web.config" or fname.downcase == "global.asax"
+      puts "AspDotNet"
+      exit 0
+    break
+  end
+end
+exit 1
+

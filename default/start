@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+#set environment variables for nginx and mono
+export PATH=$HOME/nginx/sbin:$PATH
+export PATH=$HOME/mono/bin:$PATH
+export LD_LIBRARY_PATH=$HOME/mono/lib:$LD_LIBRARY_PATH
+export MONO_IOMAP=all #makes all file system access case insensitive and strips drive name from pathnames
+
+#generate nginx.conf with current port and home directory
+erb $HOME/nginx/conf/nginx.conf.erb > $HOME/nginx/conf/nginx.conf
+
+#start nginx and mono fastcgi
+$HOME/nginx/sbin/nginx
+$HOME/mono/bin/fastcgi-mono-server4 /applications=/:$HOME/www/ /socket=tcp:127.0.0.1:9000 &
+
+#keep script running until nginx has stopped
+#   -the pid of this script is tracked by dea to check if app is running!
+sleep 1
+while kill -0 "$(cat $HOME/nginx/logs/nginx.pid)"; do
+	sleep 0.5
+done

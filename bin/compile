@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+require "open-uri"
+
+$:.unshift File.expand_path("../../lib", __FILE__)
+$stdout.sync = true
+
+#get relevant directories
+pwd = Dir.pwd
+build_dir = ARGV[0]
+cache_dir = ARGV[1]
+buildpack_dir = File.expand_path("../..",__FILE__)
+
+#check if app cache already exists
+if !Dir.exists?(cache_dir)	
+	Dir.mkdir(cache_dir) 
+end
+
+#check if buildpack tarballs have been already downloaded
+if !Dir.exists?("#{cache_dir}/nginx")	
+	Dir.chdir(cache_dir)
+
+	#download and extract nginx tarball from s3
+	system("wget https://s3.amazonaws.com/accax/nginx-1.4.1-64.tar.bz2")
+	system("tar xjvf nginx-1.4.1-64.tar.bz2")
+	system("rm nginx-1.4.1-64.tar.bz2")
+
+	#download and extract mono tarball from s3
+	system("wget https://s3.amazonaws.com/accax/mono-3.2.3-64.tar.bz2")
+	system("tar xjvf mono-3.2.3-64.tar.bz2")
+	system("rm mono-3.2.3-64.tar.bz2")
+	Dir.chdir(pwd)
+end
+
+#copy nginx and mono from cache to build directory
+system("cp -r #{cache_dir}/nginx #{build_dir}/")
+system("cp -r #{cache_dir}/mono #{build_dir}/")
+
+#copy start script to build directory
+system("cp #{buildpack_dir}/default/start #{build_dir}/nginx/start")
+
+#copy nginx.conf template to build directory
+system("cp #{buildpack_dir}/default/nginx.conf.erb #{build_dir}/nginx/conf/nginx.conf.erb")
